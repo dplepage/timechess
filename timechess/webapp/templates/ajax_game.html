@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en" ng-app="chess">
+<head>
+  <title>Time Chess</title>
+  <script src="/timechess/static/jquery.min.js"></script>
+  <script src="/timechess/static/angular.min.js"></script>
+  <script src="/timechess/static/chess.js"></script>
+  <link rel="stylesheet" type="text/css" href="/timechess/static/chess.css"/>
+</head>
+<body>
+  <svg width="0in" height="0in" version="1.1"
+    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+      <marker id="InvalidTriangle"
+        viewBox="0 0 10 10" refX="5" refY="5"
+        markerUnits="strokeWidth"
+        fill="blue"
+        markerWidth="4" markerHeight="3"
+        orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" />
+      </marker>
+      <marker id="ValidTriangle"
+        viewBox="0 0 10 10" refX="5" refY="5"
+        markerUnits="strokeWidth"
+        fill="green"
+        markerWidth="4" markerHeight="3"
+        orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" />
+      </marker>
+      <image id="piece-wp" xlink:href="/timechess/pieces/svg/Chess_plt45.svg" width="60" height="60"/>
+      <image id="piece-wr" xlink:href="/timechess/pieces/svg/Chess_rlt45.svg" width="60" height="60"/>
+      <image id="piece-wn" xlink:href="/timechess/pieces/svg/Chess_nlt45.svg" width="60" height="60"/>
+      <image id="piece-wq" xlink:href="/timechess/pieces/svg/Chess_qlt45.svg" width="60" height="60"/>
+      <image id="piece-wk" xlink:href="/timechess/pieces/svg/Chess_klt45.svg" width="60" height="60"/>
+      <image id="piece-wb" xlink:href="/timechess/pieces/svg/Chess_blt45.svg" width="60" height="60"/>
+      <image id="piece-bp" xlink:href="/timechess/pieces/svg/Chess_pdt45.svg" width="60" height="60"/>
+      <image id="piece-br" xlink:href="/timechess/pieces/svg/Chess_rdt45.svg" width="60" height="60"/>
+      <image id="piece-bn" xlink:href="/timechess/pieces/svg/Chess_ndt45.svg" width="60" height="60"/>
+      <image id="piece-bq" xlink:href="/timechess/pieces/svg/Chess_qdt45.svg" width="60" height="60"/>
+      <image id="piece-bk" xlink:href="/timechess/pieces/svg/Chess_kdt45.svg" width="60" height="60"/>
+      <image id="piece-bb" xlink:href="/timechess/pieces/svg/Chess_bdt45.svg" width="60" height="60"/>
+    </defs>
+  </svg>
+  <div ng-controller="ChessGameCtrl">
+    <h2>
+      {{uid}}
+    </h2>
+    <div ng-switch="game_loaded">
+      <div ng-switch-when="false">
+        Loading...
+      </div>
+      <div ng-switch-when="true">
+        <div class="movelist" style="position:relative">
+          <div class="movectrl" style="position:absolute; top:0;">
+            <a ng-click="prev()">&uarr; Previous Turn &uarr;</a>
+          </div>
+          <div class="movewrapper">
+            <table class="moves">
+              <colgroup>
+                 <col span="1" style="width: 30px;"/>
+                 <col span="1" style="width: 30px;"/>
+                 <col span="1" style="width: 80px;"/>
+              </colgroup>
+              <tr ng-repeat="move in moves"
+                ng-class='{curr:move.num==turn, invalid:!move.valid}'
+                ng-click="goto_turn(move.num)">
+                <td>{{move.num+1}}.</td>
+                <td>{{renderPiece(move.piece)}}</td>
+                <td>
+                  <span ng-switch="move._polymorphic_type">
+                    <span ng-switch-when="basic">
+                      {{move.start_alg}}-{{move.end_alg}}
+                    </span>
+                    <span ng-switch-when="promo">
+                      {{move.start_alg}}-{{move.end_alg}}:
+                      {{move.promotion}}
+                    </span>
+                  </span>
+                </td>
+              </tr>
+              <tr ng-class='{curr:turn==num_turns-1}'>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </table>
+          </div>
+          <div class="movectrl" style="position:absolute; bottom:0;">
+            <a ng-click="next()">&darr; Next Turn &darr; </a>
+          </div>
+        </div>
+        <div>
+          {{message}}
+        </div>
+        <div class="board-wrapper">
+          <svg width="4.5in" height="4.5in"
+            viewBox="-5 -5 485 485" version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g ng:repeat="row in board">
+              <g ng:repeat="cell in row"
+                ng:click="select(cell)"
+                class="cell-group"
+                >
+                <rect
+                  ng:bind-attr='{
+                    "x":"{{cell.x*cell_size}}",
+                    "y":"{{cell.y*cell_size}}",
+                    "width":"{{cell_size}}",
+                    "height":"{{cell_size}}",
+                    "style":"fill:{{["#ffce9e", "#d18b47"][(cell.x+cell.y)%2]}};fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-opacity:1"
+                  }'
+                  />
+                <g ng:switch="cell.piece==null">
+                  <use
+                    ng:switch-when="false"
+                    xlink:href=""
+                    ng:bind-attr='{
+                      "opacity":"{{(cell.piece!=null)+0}}",
+                      "xlink:href":"#piece-{{renderPiece(cell.piece).toLowerCase()}}",
+                      "x":"{{(cell.x)*cell_size}}",
+                      "y":"{{(cell.y)*cell_size}}",
+                      "width":"{{cell_size}}",
+                      "height":"{{cell_size}}"
+                    }'
+                  />
+                </g>
+                <rect class="cell-label"
+                  ng:bind-attr='{
+                    "x":"{{cell.x*cell_size}}",
+                    "y":"{{(cell.y+1)*cell_size-20}}",
+                    "width":"20",
+                    "height":"20"
+                  }'
+                  style="fill:white;stroke:black;"
+                  />
+                <text
+                  class="cell-label"
+                  ng:bind-attr='{
+                    "x":"{{cell.x*cell_size+2}}",
+                    "y":"{{(cell.y+1)*cell_size-5}}"
+                  }'
+                  >{{cell.alg}}</text>
+                </g>
+              </g>
+              <path
+                ng:hide="turn==moves.length"
+                ng:bind-attr='{
+                  "d":"M {{(m.start[0]+.5)*cell_size}} {{(7.5-m.start[1])*cell_size}}
+                       L {{(m.end[0]+.5)*cell_size}} {{(7.5-m.end[1])*cell_size}}",
+                  "stroke":"{{["blue","darkgreen"][m.valid+0]}}",
+                  "stroke-dasharray":"{{["9,5","10,0"][m.valid+0]}}",
+                  "marker-end":"url(#{{["InvalidTriangle", "ValidTriangle"][m.valid+0]}})"
+                }'
+                d="M 40 10 L 350 80"
+                style="opacity:.8;"
+                fill="none" stroke-width="8"
+                 />
+              <rect
+                ng:show="target!=null"
+                ng:bind-attr='{
+                    "x":"{{target.x*cell_size}}",
+                    "y":"{{target.y*cell_size}}",
+                    "width":"{{cell_size}}",
+                    "height":"{{cell_size}}",
+                    "style":"fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#FF0000;stroke-width:3;stroke-opacity:1"
+                }'
+                style="stroke-opacity:0"
+                />
+          </svg>
+          <div style="clear:both"></div>
+          <form ng-submit="domove(override_move);override_move='';">
+            <label for='override'>Send text move:</label>
+            <input id="override" ng-model="override_move" />
+          </form>
+        </div>
+      </div>
+    </div>
+    <div style="clear:both; height:50px"></div>
+    <a target="_self" href="/timechess/games">Back to Game List</a>
+    <ul style="display:none">
+      <li>TODO:</li>
+      <li>Use svg 'use' tag to replicate images rather than reloading them every refresh</li>
+      <li>Use $location service to update URL with turn #</li>
+      <li>Promotion UI</li>
+    </ul>
+  </div>
+</body>
+</html>

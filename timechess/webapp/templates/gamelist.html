@@ -1,0 +1,28 @@
+<html>
+<head>
+    <title>TimeChess Game List</title>
+</head>
+<body>
+    <h1> TimeChess Game List </h1>
+    <ul>
+        %for uid in uids:
+            <li><a href="/timechess/games?game_uid=${uid}">${uid}</a></li>
+        %endfor
+    </ul>
+    <form action="/timechess/new" method="POST">
+        <fieldset>
+            <legend> Create a new game </legend>
+            ID: <input type="text" name="uid"/><br/>
+            %for key, val in sorted(config.items()):
+                <input type="checkbox" name="${key}" id="${key}" value="true"
+                %if val:
+                    checked
+                %endif
+                />
+                <label for="${key}">${key}</label><br/>
+            %endfor
+            <input type="submit" value="New Game"/>
+        </fieldset>
+    </form>
+</body>
+</html>

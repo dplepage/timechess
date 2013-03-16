@@ -1,0 +1,81 @@
+
+.board-wrapper {
+  float:left;
+}
+
+table.board {
+  border-collapse: collapse;
+}
+
+table.board, table.board th, table.board td {
+  border: 1px solid black;
+}
+
+table.board td {
+  width:40px;
+  height:40px;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.movelist {
+  float:left;
+  margin-right:20px;
+  height: 480px;
+  width:150px;
+  background: rgb(150,150,150);
+  border: 1px solid #333;
+}
+
+.cell-label {
+  display:none;
+}
+
+.cell-group:hover .cell-label {
+  display:block;
+}
+
+.movelist .movectrl {
+  text-align: center;
+  font-weight: bold;
+  width:100%;
+}
+
+.movelist .movewrapper {
+  position:absolute;
+  top:20px;
+  width: 150px;
+  background: rgb(200,200,200);
+  max-height: 440px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+
+}
+
+.movelist table.moves {
+  border-collapse: collapse;
+  width:150px;
+  margin:0;
+}
+
+.movelist tr {
+  border-top: 3px solid rgb(200,200,200);
+}
+
+.movelist tr.curr {
+  border-top: 3px solid blue;
+}
+
+.invalid {
+  color:red;
+}
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0,0,0,.5);
+    -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+}
