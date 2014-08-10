@@ -16,11 +16,11 @@ class Piece(SchemaObj):
     WP
     '''
     field_types = dict(
-        name = Field(String(), not_empty=True),
-        short = Field(String(), not_empty=True),
-        moveable = Field(Boolean(), not_empty=True),
-        player = Field(Int(), not_empty=True),
-        uid = Field(Int(), not_empty=True),
+        name = Field(String(), not_none=True),
+        short = Field(String(), not_none=True),
+        moveable = Field(Boolean(), not_none=True),
+        player = Field(Int(), not_none=True),
+        uid = Field(Int(), not_none=True),
     )
     def __init__(self, player, name=None, short=None, uid=None):
         self.player = player
